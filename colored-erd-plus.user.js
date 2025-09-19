@@ -105,7 +105,7 @@
         offsetX = e.clientX - divForPlugin.offsetLeft;
         offsetY = e.clientY - divForPlugin.offsetTop;
 
-        divForPlugin.style.opacity = 0.5;
+        divForPlugin.style.opacity = 0.4;
     });
 
     document.body.addEventListener("mouseup", () => {
