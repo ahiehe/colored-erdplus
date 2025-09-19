@@ -1,8 +1,10 @@
 // ==UserScript==
-// @name         Colored erd+
+// @name         colored-erd-plus
 // @namespace    http://tampermonkey.net/
-// @version      2025-09-18
 // @description  Color nodes in erd+ diagrams
+// @updateURL    https://raw.githubusercontent.com/ahiehe/colored-erdplus
+// @downloadURL  https://raw.githubusercontent.com/ahiehe/colored-erdplus
+// @version      1
 // @author       You
 // @match        https://erdplus.com/diagrams/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erdplus.com
