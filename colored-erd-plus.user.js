@@ -16,7 +16,7 @@
     //------------------------variables--------------------------
     let isMouseDown = false;
 
-    const presetedColors = {"govno": "#926348",}
+    const presetedColors = {"darkbrown": "#926348",}
     //offset in div on click inside
     let offsetX = 0;
     let offsetY = 0;
