@@ -28,9 +28,19 @@
 
     //-------------------------utils methods------------------------
 
+    function setRootVariableProperty(varName, varValue){
+        root.style.setProperty(varName, varValue);
+    }
+
     //Set node color
     function setNodeBg(nodeBgColor) {
-        root.style.setProperty("--xy-node-background-color", nodeBgColor);
+        setRootVariableProperty("--xy-node-background-color", nodeBgColor);
+    }
+
+    //Set area color
+    function setAreaBg(areaBgColor) {
+        const reactFlowDiv = document.querySelector(".react-flow");
+        reactFlowDiv.style.setProperty("--xy-background-color-default", areaBgColor);
     }
 
     //---------------------------------------------------------------
@@ -41,12 +51,13 @@
         flexDirection: "column",
         alignItems: "center",
         gap: "6px",
-        backgroundColor: "rgba(200, 200, 200, 0.6)",
+        backgroundColor: "rgba(255,255,255 0.8)",
         color: "white",
         borderColor: "black",
         borderWidth: "2px",
         borderRadius: "6px",
         position: "absolute",
+        padding: "10px",
         top: "20px",
         left: "20px",
         zIndex: 9999,
@@ -154,6 +165,37 @@
     divForPlugin.appendChild(nodeBgChangeButton);
     //-------------------------------------------------------------
 
+     //-------------------------change area bg ------------------------------
+    const changeAreaBgLabel = document.createElement("label");
+    changeAreaBgLabel.textContent = "Type area bg here: ";
+    Object.assign(changeAreaBgLabel.style, labelStyles);
+
+    const areaBgInputField = document.createElement("input");
+    areaBgInputField.placeholder = "green, rgb(255, 0, 0), #112233..."
+    Object.assign(areaBgInputField.style, inputFieldStyles);
+
+    const areaBgChangeButton = document.createElement("button");
+    areaBgChangeButton.textContent = "Change area bg";
+    Object.assign(areaBgChangeButton.style, buttonStyles);
+
+    areaBgChangeButton.addEventListener("click", () => {
+        const newAreaBgValue = presetedColors[areaBgInputField.value] || areaBgInputField.value;
+
+        if (CSS.supports('color', newAreaBgValue)) {
+            setAreaBg(newAreaBgValue);
+            GM_setValue("areaBg", newAreaBgValue)
+        }
+        else {
+            alert("Not supported color");
+        }
+    });
+
+    divForPlugin.appendChild(changeAreaBgLabel);
+    divForPlugin.appendChild(areaBgInputField);
+    divForPlugin.appendChild(areaBgChangeButton);
+    //-------------------------------------------------------------
+
+
 
     //adding window
     function addWindow() {
@@ -165,6 +207,7 @@
 
     //initial color set
     setNodeBg(GM_getValue("nodeBg", "yellow"));
+    setAreaBg(GM_getValue("areaBg", "white"));
 
     //setuping div
     addWindow();
