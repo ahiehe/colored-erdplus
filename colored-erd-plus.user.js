@@ -44,6 +44,7 @@
     }
 
 
+
     function createElement(elementName, attributesDictionary){
         const newElement = document.createElement(elementName);
         Object.assign(newElement, attributesDictionary);
@@ -107,6 +108,32 @@
 		z-index: 9999;
 		font-size: 12px;
 		padding-left: 5px;
+	  }
+
+	  .colored-square-node{
+		width: 20px;
+		height: 20px;
+		background-color: var(--node-preapply-color);
+		border-color: black;
+		border-width: 2px;
+		border-radius: 4px;
+	  }
+
+	  .colored-square-bg{
+		width: 20px;
+		height: 20px;
+		background-color: var(--bg-preapply-color);
+		border-color: black;
+		border-width: 2px;
+		border-radius: 4px;
+	  }
+
+	  .input-with-square{
+	    display: flex;
+		min-width: 100%;
+		flex-direction: row;
+		align-items: center;
+        gap: 10px;
 	  }
 
 	  .button {
@@ -203,10 +230,28 @@
     //-------------------------change node bg ------------------------------
     const changeNodeBgLabel = createElement("label", {textContent: "Type node bg here", className: "label"});
 
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++
     const nodeBgInputField = createElement("input", {
         placeholder: "green, rgb(255, 0, 0), #112233...",
         className: "input"
     });
+	nodeBgInputField.addEventListener("input", (e) => {
+		setRootVariableProperty("--node-preapply-color", CSS.supports('color', e.target.value) ? e.target.value : "white");
+	});
+
+	const nodeBgColoredSquare = createElement("div", {
+        className: "colored-square-node"
+    });
+
+	const nodeSquareAndInput = createElement("div", {
+        className: "input-with-square"
+    });
+
+	nodeSquareAndInput.appendChild(nodeBgColoredSquare);
+	nodeSquareAndInput.appendChild(nodeBgInputField);
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
     const nodeBgChangeButton = createElement("button", {
         textContent: "Change node bg",
@@ -227,7 +272,7 @@
     });
 
     divForPlugin.appendChild(changeNodeBgLabel);
-    divForPlugin.appendChild(nodeBgInputField);
+    divForPlugin.appendChild(nodeSquareAndInput);
     divForPlugin.appendChild(nodeBgChangeButton);
     //-------------------------------------------------------------
 
@@ -237,10 +282,27 @@
         className: "label"
     });
 
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++
     const areaBgInputField = createElement("input", {
-  		placeholder: "green, rgb(255, 0, 0), #112233...",
-  		className: "input"
+        placeholder: "green, rgb(255, 0, 0), #112233...",
+        className: "input"
+    });
+	areaBgInputField.addEventListener("input", (e) => {
+		setRootVariableProperty("--bg-preapply-color", CSS.supports('color', e.target.value) ? e.target.value : "white");
 	});
+
+	const areaBgColoredSquare = createElement("div", {
+        className: "colored-square-bg"
+    });
+
+	const areaSquareAndInput = createElement("div", {
+        className: "input-with-square"
+    });
+
+	areaSquareAndInput.appendChild(areaBgColoredSquare);
+	areaSquareAndInput.appendChild(areaBgInputField);
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	const areaBgChangeButton = createElement("button", {
 		textContent: "Change area bg",
@@ -262,11 +324,16 @@
     });
 
     divForPlugin.appendChild(changeAreaBgLabel);
-    divForPlugin.appendChild(areaBgInputField);
+    divForPlugin.appendChild(areaSquareAndInput);
     divForPlugin.appendChild(areaBgChangeButton);
     //-------------------------------------------------------------
 
 	//-------------------------theme change ------------------------------
+	 const themeChangeLabel = createElement("label", {
+        textContent: "Choose theme",
+        className: "label"
+    });
+
 	const themeDiv = createElement("div", {
 	  id: "theme-div",
 	  className: "theme-container"
@@ -292,6 +359,7 @@
 		themeDiv.appendChild(elem);
 	});
 
+	divForPlugin.appendChild(themeChangeLabel);
     divForPlugin.appendChild(themeDiv);
 
     //-------------------------------------------------------------
@@ -310,6 +378,9 @@
     setNodeBg(GM_getValue("nodeBg", "yellow"));
     setAreaBg(GM_getValue("areaBg", "white"));
 	applyTheme(themeConfigs[GM_getValue("themeConfigName","sea")]);
+
+	setRootVariableProperty("--node-preapply-color", "white");
+	setRootVariableProperty("--bg-preapply-color", "white");
 
     //setuping div
     addWindow();
