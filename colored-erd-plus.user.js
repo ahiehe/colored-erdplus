@@ -10,6 +10,7 @@
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=erdplus.com
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_addStyle
 // ==/UserScript==
 
 (function() {
@@ -19,14 +20,36 @@
     let isMouseDown = false;
 
     const presetedColors = {"darkbrown": "#926348",}
+	const themeConfigs = {"sea": {"bgColor": "#759cd8", "secondaryColor": "#094d74"},
+						  "sakura": {"bgColor": "#e0b9ca", "secondaryColor": "#7e3d4a"},
+						  "tea": {"bgColor": "#778D45", "secondaryColor": "#344C11"},
+						  "orange": {"bgColor": "#EC9704", "secondaryColor": "#9C4A1A"},
+						  "sunset": {"bgColor": "#FDB29F", "secondaryColor": "#251766"},
+						  "red": {"bgColor": "#FD292F", "secondaryColor": "#B20000"},
+						  }
+
     //offset in div on click inside
     let offsetX = 0;
     let offsetY = 0;
 
     const root = document.documentElement;
+
     //----------------------------------------------------------
 
     //-------------------------utils methods------------------------
+
+	 function applyTheme(themeStyleConfig){
+        root.style.setProperty("--pluginBgColor", themeStyleConfig.bgColor);
+		root.style.setProperty("--pluginSecondaryColor", themeStyleConfig.secondaryColor);
+    }
+
+
+    function createElement(elementName, attributesDictionary){
+        const newElement = document.createElement(elementName);
+        Object.assign(newElement, attributesDictionary);
+
+        return newElement;
+    }
 
     function setRootVariableProperty(varName, varValue){
         root.style.setProperty(varName, varValue);
@@ -46,69 +69,111 @@
     //---------------------------------------------------------------
 
     //-------------------------styles------------------------------
-    const mainDivStyles = {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "6px",
-        backgroundColor: "rgba(255,255,255 0.8)",
-        color: "white",
-        borderColor: "black",
-        borderWidth: "2px",
-        borderRadius: "6px",
-        position: "absolute",
-        padding: "10px",
-        top: "20px",
-        left: "20px",
-        zIndex: 9999,
-    }
+    GM_addStyle(`
+	  .main-div {
+	    font-family: "Segoe UI", Tahoma, sans-serif;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+        background-color: var(--pluginBgColor);
+		color: white;
+		border-color: black;
+		border-width: 2px;
+		border-radius: 6px;
+		position: absolute;
+		padding: 10px;
+		top: 20px;
+		left: 20px;
+		width: 220px;
+		z-index: 9999;
+	  }
 
-    const draggDivStyles = {
-        position: "relative",
-        width: "100%",
-        height: "20px",
-        backgroundImage: "radial-gradient(#93909f 40%, transparent 40%)",
-        backgroundSize: "5px 5px",
-    }
+	  .dragg-div {
+		position: relative;
+		width: 100%;
+		height: 20px;
+		background-image: radial-gradient(#93909f 40%, transparent 40%);
+		background-size: 5px 5px;
+	  }
 
-    const inputFieldStyles = {
-        width: "200px",
-        height: "40px",
-        color: "black",
-        border: "none",
-        borderRadius: "6px",
-        cursor: "pointer",
-        zIndex: 9999,
+	  .input {
+		width: 100%;
+		height: 40px;
+        color: black;
+		border: none;
+		border-radius: 6px;
+		cursor: pointer;
+		z-index: 9999;
+		font-size: 12px;
+		padding-left: 5px;
+	  }
 
-        fontSize: "12px",
-    }
+	  .button {
+		width: 100%;
+		height: 40px;
+		background-color: var(--pluginSecondaryColor);
+		color: white;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		z-index: 9999;
+	  }
 
-    const buttonStyles = {
-        width: "200px",
-        height: "40px",
-        backgroundColor: "aqua",
-        color: "white",
-        border: "none",
-        borderRadius: "4px",
-        cursor: "pointer",
-        zIndex: 9999
-    }
+	  .button:hover{
+	    background-color: #0b5394;
+	  }
 
-    const labelStyles = {
-        fontSize: "16px",
-        color: "black",
-        cursor: "pointer",
-        zIndex: 9999
-    }
+	  .label {
+		font-size: 16px;
+		color: white;
+		cursor: pointer;
+		z-index: 9999;
+	  }
+
+	  .theme-container{
+	    width: 100%;
+	    margin-top: 10px;
+	    display: flex;
+		flex-direction: row;
+		overflow-x: scroll;
+		gap: 3px;
+		padding-bottom: 6px;
+	  }
+
+	  .theme-container::-webkit-scrollbar {
+	    height: 6px;
+	  }
+
+	  .theme-container::-webkit-scrollbar-thumb {
+	    background-color: var(--pluginSecondaryColor);
+	    border-radius: 3px;
+	  }
+
+	  .theme-button{
+		min-width: 60px;
+		min-height: 30px;
+		background-color: white;
+		color: black;
+		border: none;
+
+		border-radius: 10px;
+		cursor: pointer;
+		z-index: 9999;
+	  }
+	`);
+
     //-------------------------------------------------------------
 
     //-------------------------main div ------------------------------
-    const divForPlugin = document.createElement("div");
-    divForPlugin.id = "tm-div";
-    Object.assign(divForPlugin.style, mainDivStyles);
+    const divForPlugin = createElement("div", {
+	  id: "tm-div",
+	  className: "main-div"
+	});
 
-    const divForDragging = document.createElement("div");
-    Object.assign(divForDragging.style, draggDivStyles);
+	const divForDragging = createElement("div", {
+	  className: "dragg-div"
+	});
 
     divForPlugin.appendChild(divForDragging);
 
@@ -136,17 +201,18 @@
     //-------------------------------------------------------------
 
     //-------------------------change node bg ------------------------------
-    const changeNodeBgLabel = document.createElement("label");
-    changeNodeBgLabel.textContent = "Type node bg here: ";
-    Object.assign(changeNodeBgLabel.style, labelStyles);
+    const changeNodeBgLabel = createElement("label", {textContent: "Type node bg here", className: "label"});
 
-    const nodeBgInputField = document.createElement("input");
-    nodeBgInputField.placeholder = "green, rgb(255, 0, 0), #112233..."
-    Object.assign(nodeBgInputField.style, inputFieldStyles);
+    const nodeBgInputField = createElement("input", {
+        placeholder: "green, rgb(255, 0, 0), #112233...",
+        className: "input"
+    });
 
-    const nodeBgChangeButton = document.createElement("button");
-    nodeBgChangeButton.textContent = "Change node bg";
-    Object.assign(nodeBgChangeButton.style, buttonStyles);
+    const nodeBgChangeButton = createElement("button", {
+        textContent: "Change node bg",
+        className: "button"
+    });
+
 
     nodeBgChangeButton.addEventListener("click", () => {
         const newBgValue = presetedColors[nodeBgInputField.value] || nodeBgInputField.value;
@@ -165,18 +231,23 @@
     divForPlugin.appendChild(nodeBgChangeButton);
     //-------------------------------------------------------------
 
-     //-------------------------change area bg ------------------------------
-    const changeAreaBgLabel = document.createElement("label");
-    changeAreaBgLabel.textContent = "Type area bg here: ";
-    Object.assign(changeAreaBgLabel.style, labelStyles);
+    //-------------------------change area bg ------------------------------
+    const changeAreaBgLabel = createElement("label", {
+        textContent: "Type area bg here: ",
+        className: "label"
+    });
 
-    const areaBgInputField = document.createElement("input");
-    areaBgInputField.placeholder = "green, rgb(255, 0, 0), #112233..."
-    Object.assign(areaBgInputField.style, inputFieldStyles);
+    const areaBgInputField = createElement("input", {
+  		placeholder: "green, rgb(255, 0, 0), #112233...",
+  		className: "input"
+	});
 
-    const areaBgChangeButton = document.createElement("button");
-    areaBgChangeButton.textContent = "Change area bg";
-    Object.assign(areaBgChangeButton.style, buttonStyles);
+	const areaBgChangeButton = createElement("button", {
+		textContent: "Change area bg",
+		className: "button"
+	});
+
+
 
     areaBgChangeButton.addEventListener("click", () => {
         const newAreaBgValue = presetedColors[areaBgInputField.value] || areaBgInputField.value;
@@ -195,6 +266,36 @@
     divForPlugin.appendChild(areaBgChangeButton);
     //-------------------------------------------------------------
 
+	//-------------------------theme change ------------------------------
+	const themeDiv = createElement("div", {
+	  id: "theme-div",
+	  className: "theme-container"
+	});
+
+	const themeButtons = Object.keys(themeConfigs).map((themeName) =>
+		createElement("button", {
+			textContent: themeName,
+			id: themeName,
+			className: "theme-button"
+		})
+	);
+
+
+
+    themeButtons.forEach((elem) => {
+
+		elem.addEventListener("click", () => {
+			applyTheme(themeConfigs[elem.id])
+			GM_setValue("themeConfigName", elem.id)
+		})
+
+		themeDiv.appendChild(elem);
+	});
+
+    divForPlugin.appendChild(themeDiv);
+
+    //-------------------------------------------------------------
+
 
 
     //adding window
@@ -208,6 +309,7 @@
     //initial color set
     setNodeBg(GM_getValue("nodeBg", "yellow"));
     setAreaBg(GM_getValue("areaBg", "white"));
+	applyTheme(themeConfigs[GM_getValue("themeConfigName","sea")]);
 
     //setuping div
     addWindow();
