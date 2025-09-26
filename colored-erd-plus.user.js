@@ -19,6 +19,7 @@
     //------------------------variables--------------------------
     let isMouseDown = false;
 
+    const presetedConfig = {"darkbrown": "#926348",}
 	const themeConfigs = {"sea": {"bgColor": "#759cd8", "secondaryColor": "#094d74"},
 						  "sakura": {"bgColor": "#e0b9ca", "secondaryColor": "#7e3d4a"},
 						  "tea": {"bgColor": "#778D45", "secondaryColor": "#344C11"},
@@ -140,23 +141,31 @@
 		--bg-preapply-color: white;
 	  }
 
-	  .main-div {
+	  .window {
 	    font-family: "Segoe UI", Tahoma, sans-serif;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 6px;
+		gap: 12px;
         background-color: var(--pluginBgColor);
 		color: white;
 		border-color: black;
 		border-width: 2px;
 		border-radius: 6px;
 		position: absolute;
-		padding: 10px;
 		top: 20px;
 		left: 20px;
 		width: 220px;
 		z-index: 9999;
+	  }
+
+	  .main-div{
+        display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 6px;
+		padding: 10px;
+		width: 100%;
 	  }
 
 	  .dragg-div {
@@ -275,6 +284,10 @@
     //-------------------------------------------------------------
 
     //-------------------------main div ------------------------------
+	const windowDiv = createElement("div", {
+	  className: "window"
+	});
+
     const divForPlugin = createElement("div", {
 	  id: "tm-div",
 	  className: "main-div"
@@ -284,28 +297,28 @@
 	  className: "dragg-div"
 	});
 
-    divForPlugin.appendChild(divForDragging);
+    windowDiv.appendChild(divForDragging);
 
     //listeners for moving main div
     divForDragging.addEventListener("mousedown", (e) => {
         isMouseDown = true;
-        offsetX = e.clientX - divForPlugin.offsetLeft;
-        offsetY = e.clientY - divForPlugin.offsetTop;
+        offsetX = e.clientX - windowDiv.offsetLeft;
+        offsetY = e.clientY - windowDiv.offsetTop;
 
-        divForPlugin.style.opacity = 0.4;
+        windowDiv.style.opacity = 0.4;
     });
 
     document.body.addEventListener("mouseup", () => {
         isMouseDown = false;
-        divForPlugin.style.opacity = 1;
+        windowDiv.style.opacity = 1;
     });
 
 
     document.body.addEventListener("mousemove", (e) => {
         if (!isMouseDown) return;
 
-        divForPlugin.style.top = `${e.clientY - offsetY}px`;
-        divForPlugin.style.left = `${e.clientX - offsetX}px`;
+        windowDiv.style.top = `${e.clientY - offsetY}px`;
+        windowDiv.style.left = `${e.clientX - offsetX}px`;
     });
     //-------------------------------------------------------------
 
@@ -400,7 +413,6 @@
         if (CSS.supports('color', newAreaBgValue)) {
             setAreaBg(newAreaBgValue);
 			removeThemeSelection(diagramThemeButtons);
-
         }
         else {
             alert("Not supported color");
@@ -487,15 +499,36 @@
 
     //-------------------------------------------------------------
 
+	//adding window
+	function addWindow() {
+        document.body.appendChild(windowDiv);
+    }
 
 
-    //adding window
-    function addWindow() {
-        if (document.querySelector("#tm-div")) return;
+    //enable/disable window return true if window become enabled
+    function toggleWindow() {
+        if (windowDiv.querySelector("#tm-div")) {
+			windowDiv.removeChild(divForPlugin);
+			return false;
+		}
 
-        document.body.appendChild(divForPlugin);
+		windowDiv.appendChild(divForPlugin);
+		return true;
 
     }
+
+	const xbtn = createElement("button", {
+		textContent: "x",
+		className: "button"
+	});
+
+    xbtn.addEventListener("click", () => {
+		const isEnabled = toggleWindow();
+		if (isEnabled) xbtn.textContent = "x"
+		else xbtn.textContent = "\u25A1";
+    });
+
+	windowDiv.appendChild(xbtn);
 
     //initial color set
 	if (diagramColors.diagramThemeName){
@@ -513,4 +546,5 @@
 
     //setuping div
     addWindow();
+	toggleWindow();
 })();
