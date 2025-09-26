@@ -157,14 +157,14 @@
 		left: 20px;
 		width: 220px;
 		z-index: 9999;
+		padding: 10px;
 	  }
 
-	  .main-div{
+	  .container-div{
         display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 6px;
-		padding: 10px;
 		width: 100%;
 	  }
 
@@ -172,7 +172,7 @@
 		position: relative;
 		width: 100%;
 		height: 20px;
-		background-image: radial-gradient(#93909f 40%, transparent 40%);
+		background-image: radial-gradient(var(--pluginSecondaryColor) 40%, transparent 40%);
 		background-size: 5px 5px;
 	  }
 
@@ -222,7 +222,20 @@
 		border: none;
 		border-radius: 4px;
 		cursor: pointer;
-		z-index: 9999;
+	  }
+
+	  .toggle-button{
+		width: 100%;
+		height: 20px;
+		font-weight: bold;
+		color: var(--pluginSecondaryColor);
+	  }
+
+	  .horizontal-line{
+	  	width: 100%;
+		height: 2px;
+		background-color: var(--pluginSecondaryColor);
+		opacity: 0.6;
 	  }
 
 	  .button:hover{
@@ -265,7 +278,6 @@
 
 		border-radius: 10px;
 		cursor: pointer;
-		z-index: 9999;
 	  }
 
 	  .theme-button-selected{
@@ -277,7 +289,6 @@
 
 		border-radius: 10px;
 		cursor: pointer;
-		z-index: 9999;
 	  }
 	`);
 
@@ -290,7 +301,7 @@
 
     const divForPlugin = createElement("div", {
 	  id: "tm-div",
-	  className: "main-div"
+	  className: "container-div"
 	});
 
 	const divForDragging = createElement("div", {
@@ -298,6 +309,27 @@
 	});
 
     windowDiv.appendChild(divForDragging);
+
+
+	const toggleWindowButton = createElement("button", {
+		textContent: "\u25BD",
+		className: "toggle-button"
+	});
+
+	const lineToggleWindow = createElement("div", {
+	  className: "horizontal-line"
+	});
+
+    toggleWindowButton.addEventListener("click", () => {
+		const isEnabled = toggleSection(windowDiv, divForPlugin, "#tm-div");
+		if (isEnabled) toggleWindowButton.textContent = "\u25BD"
+		else toggleWindowButton.textContent = "\u25B3";
+    });
+
+	windowDiv.appendChild(toggleWindowButton);
+	windowDiv.appendChild(lineToggleWindow);
+
+
 
     //listeners for moving main div
     divForDragging.addEventListener("mousedown", (e) => {
@@ -360,7 +392,6 @@
         if (CSS.supports('color', newBgValue)) {
             setNodeBg(newBgValue);
 			removeThemeSelection(diagramThemeButtons);
-            
         }
         else {
             alert("Not supported color");
@@ -424,7 +455,40 @@
     divForPlugin.appendChild(areaBgChangeButton);
     //-------------------------------------------------------------
 
+	//------------------------ theme changers div -----------------------
+	const divThemeChangers = createElement("div", {
+	  id: "theme-section",
+	  className: "container-div"
+	});
+
+	const toggleThemesButton = createElement("button", {
+		textContent: "\u25B3",
+		className: "toggle-button"
+	});
+
+	const lineToggleThemes = createElement("div", {
+	  className: "horizontal-line"
+	});
+
+    toggleThemesButton.addEventListener("click", () => {
+		const isEnabled = toggleSection(divForPlugin, divThemeChangers, "#theme-section");
+		if (isEnabled) toggleThemesButton.textContent = "\u25BD"
+		else toggleThemesButton.textContent = "\u25B3";
+    });
+
+
+
+	divForPlugin.appendChild(toggleThemesButton);
+	divForPlugin.appendChild(lineToggleThemes);
+	//--------------------------------------------------------------
+
 	//-------------------------theme change ------------------------------
+
+	const divForPluginTheme = createElement("div", {
+	  className: "container-div"
+	});
+
+
 	 const themeChangeLabel = createElement("label", {
         textContent: "Choose theme",
         className: "label"
@@ -457,12 +521,16 @@
 		themeDiv.appendChild(elem);
 	});
 
-	divForPlugin.appendChild(themeChangeLabel);
-    divForPlugin.appendChild(themeDiv);
-
+	divForPluginTheme.appendChild(themeChangeLabel);
+    divForPluginTheme.appendChild(themeDiv);
+	divThemeChangers.appendChild(divForPluginTheme);
     //-------------------------------------------------------------
 
 	//-------------------------diagram theme change ------------------------------
+	const divForDiagramTheme = createElement("div", {
+	  className: "container-div"
+	});
+
 	 const diagramThemeChangeLabel = createElement("label", {
         textContent: "Choose diagram theme",
         className: "label"
@@ -494,9 +562,9 @@
 		diagramThemeDiv.appendChild(elem);
 	});
 
-	divForPlugin.appendChild(diagramThemeChangeLabel);
-    divForPlugin.appendChild(diagramThemeDiv);
-
+	divForDiagramTheme.appendChild(diagramThemeChangeLabel);
+    divForDiagramTheme.appendChild(diagramThemeDiv);
+	divThemeChangers.appendChild(divForDiagramTheme);
     //-------------------------------------------------------------
 
 	//adding window
@@ -505,30 +573,18 @@
     }
 
 
-    //enable/disable window return true if window become enabled
-    function toggleWindow() {
-        if (windowDiv.querySelector("#tm-div")) {
-			windowDiv.removeChild(divForPlugin);
+    //enable/disable section return true if window become enabled
+    function toggleSection(parent, children, id) {
+        if (parent.querySelector(id)) {
+			parent.removeChild(children);
 			return false;
 		}
 
-		windowDiv.appendChild(divForPlugin);
+		parent.appendChild(children);
 		return true;
 
     }
 
-	const xbtn = createElement("button", {
-		textContent: "x",
-		className: "button"
-	});
-
-    xbtn.addEventListener("click", () => {
-		const isEnabled = toggleWindow();
-		if (isEnabled) xbtn.textContent = "x"
-		else xbtn.textContent = "\u25A1";
-    });
-
-	windowDiv.appendChild(xbtn);
 
     //initial color set
 	if (diagramColors.diagramThemeName){
@@ -546,5 +602,5 @@
 
     //setuping div
     addWindow();
-	toggleWindow();
+	toggleSection(windowDiv, divForPlugin, "#tm-div");
 })();
