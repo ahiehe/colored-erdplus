@@ -19,29 +19,103 @@
     //------------------------variables--------------------------
     let isMouseDown = false;
 
-    const presetedColors = {"darkbrown": "#926348",}
 	const themeConfigs = {"sea": {"bgColor": "#759cd8", "secondaryColor": "#094d74"},
 						  "sakura": {"bgColor": "#e0b9ca", "secondaryColor": "#7e3d4a"},
 						  "tea": {"bgColor": "#778D45", "secondaryColor": "#344C11"},
 						  "orange": {"bgColor": "#EC9704", "secondaryColor": "#9C4A1A"},
 						  "sunset": {"bgColor": "#FDB29F", "secondaryColor": "#251766"},
 						  "red": {"bgColor": "#FD292F", "secondaryColor": "#B20000"},
+						  "minimal": {"bgColor": "#7B7C81", "secondaryColor": "#453C41"},
 						  }
+
+
 
     //offset in div on click inside
     let offsetX = 0;
     let offsetY = 0;
 
+	let selectedThemeName = getSavedPluginThemeName();
+	let diagramColors = getSavedDiagramTheme();
+
     const root = document.documentElement;
 
     //----------------------------------------------------------
 
+	//saves and gets
+	function getSavedPluginThemeName(){
+		return GM_getValue("selectedThemeName","sea");
+	}
+
+	function getSavedDiagramTheme(){
+		return {"nodeBg": GM_getValue("nodeBg", "yellow"),
+				"areaBg": GM_getValue("areaBg", "white"),
+				"diagramThemeName": GM_getValue("selectedDiagramThemeName", null)
+				};
+	}
+
+
+
+	function setSavedPluginThemeName(newColor){
+		GM_setValue("selectedThemeName", newColor);
+	}
+
+	function setSavedNodeBg(newColor){
+		setSavedDiagramThemeNull();
+		GM_setValue("nodeBg", newColor);
+	}
+
+	function setSavedBackgroundAreaBg(newColor){
+		setSavedDiagramThemeNull();
+		GM_setValue("areaBg", newColor);
+	}
+
+	function setSavedDiagramThemeNull(){
+		GM_setValue("selectedDiagramThemeName", null);
+	}
+
+	function setSavedDiagramThemeName(themeName){
+		GM_setValue("selectedDiagramThemeName", themeName);
+	}
+
+
+
+	//----------------------------------------------------------
+
     //-------------------------utils methods------------------------
 
-	 function applyTheme(themeStyleConfig){
+	//Set node color
+    function setNodeBg(nodeBgColor) {
+        setRootVariableProperty("--xy-node-background-color", nodeBgColor);
+		setSavedNodeBg(nodeBgColor);
+    }
+
+    //Set area color
+    function setAreaBg(areaBgColor) {
+        const reactFlowDiv = document.querySelector(".react-flow");
+        reactFlowDiv.style.setProperty("--xy-background-color-default", areaBgColor);
+		setSavedBackgroundAreaBg(areaBgColor);
+    }
+
+	function applyTheme(themeStyleConfig){
         root.style.setProperty("--pluginBgColor", themeStyleConfig.bgColor);
 		root.style.setProperty("--pluginSecondaryColor", themeStyleConfig.secondaryColor);
     }
+
+	function applyNodeTheme(themeStyleConfig){
+		setNodeBg(themeStyleConfig.bgColor)
+		setAreaBg(themeStyleConfig.secondaryColor);
+    }
+
+	function removeThemeSelection(themeButtons){
+		themeButtons.forEach((elem) => {
+			elem.className = "theme-button";
+		});
+	}
+
+	function selectThemeButton(themeButtons, selectedThemeButton){
+		removeThemeSelection(themeButtons);
+		selectedThemeButton.className = "theme-button-selected";
+	}
 
 
 
@@ -56,21 +130,16 @@
         root.style.setProperty(varName, varValue);
     }
 
-    //Set node color
-    function setNodeBg(nodeBgColor) {
-        setRootVariableProperty("--xy-node-background-color", nodeBgColor);
-    }
-
-    //Set area color
-    function setAreaBg(areaBgColor) {
-        const reactFlowDiv = document.querySelector(".react-flow");
-        reactFlowDiv.style.setProperty("--xy-background-color-default", areaBgColor);
-    }
 
     //---------------------------------------------------------------
 
     //-------------------------styles------------------------------
     GM_addStyle(`
+	  :root{
+	  	--node-preapply-color: white;
+		--bg-preapply-color: white;
+	  }
+
 	  .main-div {
 	    font-family: "Segoe UI", Tahoma, sans-serif;
 		display: flex;
@@ -153,7 +222,8 @@
 
 	  .label {
 		font-size: 16px;
-		color: white;
+		color: var(--pluginSecondaryColor);
+		font-weight: bold;
 		cursor: pointer;
 		z-index: 9999;
 	  }
@@ -182,6 +252,18 @@
 		min-height: 30px;
 		background-color: white;
 		color: black;
+		border: none;
+
+		border-radius: 10px;
+		cursor: pointer;
+		z-index: 9999;
+	  }
+
+	  .theme-button-selected{
+		min-width: 60px;
+		min-height: 30px;
+		background-color: var(--pluginSecondaryColor);
+		color: white;
 		border: none;
 
 		border-radius: 10px;
@@ -260,11 +342,12 @@
 
 
     nodeBgChangeButton.addEventListener("click", () => {
-        const newBgValue = presetedColors[nodeBgInputField.value] || nodeBgInputField.value;
+        const newBgValue = nodeBgInputField.value;
 
         if (CSS.supports('color', newBgValue)) {
             setNodeBg(newBgValue);
-            GM_setValue("nodeBg", newBgValue)
+			removeThemeSelection(diagramThemeButtons);
+            
         }
         else {
             alert("Not supported color");
@@ -312,11 +395,12 @@
 
 
     areaBgChangeButton.addEventListener("click", () => {
-        const newAreaBgValue = presetedColors[areaBgInputField.value] || areaBgInputField.value;
+        const newAreaBgValue = areaBgInputField.value;
 
         if (CSS.supports('color', newAreaBgValue)) {
             setAreaBg(newAreaBgValue);
-            GM_setValue("areaBg", newAreaBgValue)
+			removeThemeSelection(diagramThemeButtons);
+
         }
         else {
             alert("Not supported color");
@@ -352,8 +436,10 @@
     themeButtons.forEach((elem) => {
 
 		elem.addEventListener("click", () => {
-			applyTheme(themeConfigs[elem.id])
-			GM_setValue("themeConfigName", elem.id)
+			applyTheme(themeConfigs[elem.id]);
+			selectThemeButton(themeButtons, elem);
+			setSavedPluginThemeName(elem.id);
+
 		})
 
 		themeDiv.appendChild(elem);
@@ -361,6 +447,43 @@
 
 	divForPlugin.appendChild(themeChangeLabel);
     divForPlugin.appendChild(themeDiv);
+
+    //-------------------------------------------------------------
+
+	//-------------------------diagram theme change ------------------------------
+	 const diagramThemeChangeLabel = createElement("label", {
+        textContent: "Choose diagram theme",
+        className: "label"
+    });
+
+	const diagramThemeDiv = createElement("div", {
+	  id: "theme-div",
+	  className: "theme-container"
+	});
+
+	const diagramThemeButtons = Object.keys(themeConfigs).map((themeName) =>
+		createElement("button", {
+			textContent: themeName,
+			id: themeName,
+			className: "theme-button"
+		})
+	);
+
+
+
+    diagramThemeButtons.forEach((elem) => {
+
+		elem.addEventListener("click", () => {
+		    applyNodeTheme(themeConfigs[elem.id]);
+			selectThemeButton(diagramThemeButtons, elem);
+			setSavedDiagramThemeName(elem.id);
+		})
+
+		diagramThemeDiv.appendChild(elem);
+	});
+
+	divForPlugin.appendChild(diagramThemeChangeLabel);
+    divForPlugin.appendChild(diagramThemeDiv);
 
     //-------------------------------------------------------------
 
@@ -375,12 +498,18 @@
     }
 
     //initial color set
-    setNodeBg(GM_getValue("nodeBg", "yellow"));
-    setAreaBg(GM_getValue("areaBg", "white"));
-	applyTheme(themeConfigs[GM_getValue("themeConfigName","sea")]);
+	if (diagramColors.diagramThemeName){
+		applyNodeTheme(themeConfigs[diagramColors.diagramThemeName]);
+		selectThemeButton(diagramThemeButtons, diagramThemeButtons.find((btn) => btn.id === diagramColors.diagramThemeName) );
+	}
+	else{
+		setNodeBg(diagramColors.nodeBg);
+		setAreaBg(diagramColors.areaBg);
+	}
 
-	setRootVariableProperty("--node-preapply-color", "white");
-	setRootVariableProperty("--bg-preapply-color", "white");
+	applyTheme(themeConfigs[selectedThemeName]);
+
+	selectThemeButton(themeButtons, themeButtons.find((btn) => btn.id === selectedThemeName));
 
     //setuping div
     addWindow();
