@@ -22,7 +22,8 @@ Tampermonkey-скрипт для **кастомизации диаграмм в 
 ---
 
 ## Скриншот
-<img width="897" height="420" alt="image" src="https://github.com/user-attachments/assets/86d595e4-1962-4dbd-a8bd-71bfcc1ab81b" />
+<img width="970" height="620" alt="image" src="https://github.com/user-attachments/assets/5236d74a-9cc4-4848-a3b3-7c79159e4f49" />
+<img width="970" height="620" alt="image" src="https://github.com/user-attachments/assets/9a00fd91-90bb-4cb1-93f5-455307732d37" />
 
 ---
 
