@@ -1,6 +1,6 @@
 # colored-erd-plus
 
-Tampermonkey-скрипт для **кастомизации диаграмм в [ERD+](https://erdplus.com/)**.  
+Userscript для **кастомизации диаграмм в [ERD+](https://erdplus.com/)**.  
 Позволяет менять цвета нод и фона рабочей области прямо на странице.
 
 ---
